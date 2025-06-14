@@ -275,3 +275,20 @@ El tiempo de espera durante la transmisión de datos por el puerto serie: El uso
 ## Temperatura
 
 Este código lee la temperatura interna del microcontrolador y la envía al puerto serie para ser visualizada en un monitor serie. En el setup(), se inicia la comunicación serie y se espera un segundo para estabilizar la conexión. Luego, en el loop(), el microcontrolador lee la temperatura utilizando la función temperatureRead() y la imprime en la pantalla cada segundo. El proceso se repite continuamente, proporcionando actualizaciones periódicas de la temperatura interna.
+
+```cpp
+#include <Arduino.h>
+
+void setup() {
+  Serial.begin(115200);
+  delay(1000);
+}
+
+void loop() {
+  float temperature = temperatureRead();
+  Serial.print("Temperatura interna: ");
+  Serial.print(temperature);
+  Serial.println(" °C");
+  delay(1000);
+}
+```
