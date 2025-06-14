@@ -185,7 +185,7 @@ Luego, se ha medido la máxima frecuencia de apagado/encendido en cuatro casos d
 - Sin el envío por el puerto serie y accediendo directamente a los registros
 
 
-## Diagrama de flujo con NeoPixel y delay()
+## 1.Diagrama de flujo con NeoPixel y delay()
 
 1. Incluir la librería `Adafruit_NeoPixel`.
 2. Definir el pin 48 como conexión del LED.
@@ -200,13 +200,9 @@ Luego, se ha medido la máxima frecuencia de apagado/encendido en cuatro casos d
    - Ejecutar `pixels.show()`.
    - Esperar 500 ms con `delay(500)`.
 
----
-
 ## Diagrama de tiempos con con NeoPixel y delay()
 
 ![Texto alternativo](Tiempos1.jpg)
-
----
 
 ## 2. Diagrama de flujo con salida al puerto serie (ON/OFF)
 
@@ -224,8 +220,6 @@ Luego, se ha medido la máxima frecuencia de apagado/encendido en cuatro casos d
 ## Diagrama de tiempos con salida al puerto serie (ON/OFF)
 
 ![Texto alternativo](Tiempos2.jpg)
-
----
 
 ## 3. Diagrama de flujo con acceso directo a registros GPIO
 
@@ -245,8 +239,6 @@ Luego, se ha medido la máxima frecuencia de apagado/encendido en cuatro casos d
 ## Diagrama de tiempos con acceso directo a registros GPIO
 
 ![Texto alternativo](Tiempos3.jpg)
-
----
 
 ## 4. Diagrama de flujo sin delay(), con registros y millis()
 
