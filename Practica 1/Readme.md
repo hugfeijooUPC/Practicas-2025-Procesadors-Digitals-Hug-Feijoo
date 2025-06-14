@@ -255,12 +255,12 @@ Luego, se ha medido la máxima frecuencia de apagado/encendido en cuatro casos d
 
 ## Diagramas de tiempos con con NeoPixel y delay()
 
-![Texto alternativo](url_de_la_imagen.jpg)
+![Texto alternativo](Tiempos1.jpg)
 
 
 ## Diagramas de tiempos con salida al puerto serie (ON/OFF)
 
-
+![Texto alternativo](Tiempos2.jpg)
 
 ## ¿En el programa que se ha realizado cuál es el tiempo libre que tiene el procesador?
 
