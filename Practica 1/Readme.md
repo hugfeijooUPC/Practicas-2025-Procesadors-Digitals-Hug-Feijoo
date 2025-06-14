@@ -202,6 +202,10 @@ Luego, se ha medido la máxima frecuencia de apagado/encendido en cuatro casos d
 
 ---
 
+## Diagrama de tiempos con con NeoPixel y delay()
+
+![Texto alternativo](Tiempos1.jpg)
+
 ## 2. Diagrama de flujo con salida al puerto serie (ON/OFF)
 
 1. Repetir los pasos de la versión 1.
@@ -216,6 +220,10 @@ Luego, se ha medido la máxima frecuencia de apagado/encendido en cuatro casos d
    - Esperar 1000 ms.
 
 ---
+
+## Diagrama de tiempos con salida al puerto serie (ON/OFF)
+
+![Texto alternativo](Tiempos2.jpg)
 
 ## 3. Diagrama de flujo con acceso directo a registros GPIO
 
@@ -233,6 +241,10 @@ Luego, se ha medido la máxima frecuencia de apagado/encendido en cuatro casos d
    - Esperar 1000 ms.
 
 ---
+
+## Diagrama de tiempos con acceso directo a registros GPIO
+
+![Texto alternativo](Tiempos3.jpg)
 
 ## 4. Diagrama de flujo sin delay(), con registros y millis()
 
@@ -252,19 +264,6 @@ Luego, se ha medido la máxima frecuencia de apagado/encendido en cuatro casos d
 
 ---
 
-
-## Diagrama de tiempos con con NeoPixel y delay()
-
-![Texto alternativo](Tiempos1.jpg)
-
-
-## Diagrama de tiempos con salida al puerto serie (ON/OFF)
-
-![Texto alternativo](Tiempos2.jpg)
-
-## Diagrama de tiempos con acceso directo a registros GPIO
-
-![Texto alternativo](Tiempos3.jpg)
 
 ## ¿En el programa que se ha realizado cuál es el tiempo libre que tiene el procesador?
 
