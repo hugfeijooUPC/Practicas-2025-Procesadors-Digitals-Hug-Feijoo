@@ -136,7 +136,48 @@ Sin embargo, los NeoPixels no son LEDs comunes., no se pueden controlar simpleme
 
 ## 4.Sin Delays
 
-Se han eliminado los delays, y se ha modificado el pin de salida al número 2. Luego, se ha medido la máxima frecuencia de apagado/encendido en cuatro casos diferentes utilizando el osciloscopio:
+Se han eliminado los delays, y se ha modificado el pin de salida al número 2. 
+
+```cpp
+#include <Arduino.h>
+
+// Pin de salida configurable
+#define LED_PIN 2  
+
+// Punteros a los registros GPIO
+uint32_t *gpio_out = (uint32_t *)GPIO_OUT_REG;
+uint32_t *gpio_enable = (uint32_t *)GPIO_ENABLE_REG;
+
+// Variables para el control del tiempo
+unsigned long previousMillis = 0;
+const long interval = 1000; // Intervalo de 1 segundo
+bool ledState = false;
+
+void setup() {
+  Serial.begin(115200);
+  *gpio_enable |= (1 << LED_PIN);  // Configurar el pin como salida
+}
+
+void loop() {
+  unsigned long currentMillis = millis();
+
+  if (currentMillis - previousMillis >= interval) {
+    previousMillis = currentMillis;
+    ledState = !ledState; // Alternar el estado del LED
+    
+    if (ledState) {
+      *gpio_out |= (1 << LED_PIN);
+      Serial.println("ON");
+    } else {
+      *gpio_out &= ~(1 << LED_PIN);
+      Serial.println("OFF");
+    }
+  }
+}
+```
+
+
+Luego, se ha medido la máxima frecuencia de apagado/encendido en cuatro casos diferentes utilizando el osciloscopio:
 
 - Con el envío por el puerto serie del mensaje y utilizando las funciones de Arduino
 - Con el envío por el puerto serie y accediendo directamente a los registros
@@ -144,10 +185,82 @@ Se han eliminado los delays, y se ha modificado el pin de salida al número 2. L
 - Sin el envío por el puerto serie y accediendo directamente a los registros
 
 
-## Diagrama de flujo
+## Diagrama de flujo con NeoPixel y delay()
+
+1. Incluir la librería `Adafruit_NeoPixel`.
+2. Definir el pin 48 como conexión del LED.
+3. Crear el objeto `Adafruit_NeoPixel`.
+4. En `setup()`:
+   - Llamar a `pixels.begin()` para inicializar.
+5. En `loop()`:
+   - Encender el LED (color blanco).
+   - Ejecutar `pixels.show()`.
+   - Esperar 500 ms con `delay(500)`.
+   - Apagar el LED (color negro).
+   - Ejecutar `pixels.show()`.
+   - Esperar 500 ms con `delay(500)`.
+
+---
+
+## 2. Diagrama de flujo con salida al puerto serie (ON/OFF)
+
+1. Repetir los pasos de la versión 1.
+2. En `setup()`:
+   - Añadir `Serial.begin(115200)`.
+3. En `loop()`:
+   - Encender LED y llamar a `show()`.
+   - Enviar `"ON"` al puerto serie.
+   - Esperar 1000 ms.
+   - Apagar LED y llamar a `show()`.
+   - Enviar `"OFF"` al puerto serie.
+   - Esperar 1000 ms.
+
+---
+
+## 3. Diagrama de flujo con acceso directo a registros GPIO
+
+1. Definir `LED_PIN` como 48.
+2. Crear punteros a `GPIO_OUT_REG` y `GPIO_ENABLE_REG`.
+3. En `setup()`:
+   - Iniciar `Serial.begin(115200)`.
+   - Configurar el pin como salida con `*gpio_enable |= (1 << LED_PIN);`.
+4. En `loop()`:
+   - Encender el pin con `*gpio_out |= (1 << LED_PIN);`.
+   - Enviar `"ON"` al puerto serie.
+   - Esperar 1000 ms.
+   - Apagar el pin con `*gpio_out &= ~(1 << LED_PIN);`.
+   - Enviar `"OFF"` al puerto serie.
+   - Esperar 1000 ms.
+
+---
+
+## 4. Diagrama de flujo sin delay(), con registros y millis()
+
+1. Definir `LED_PIN` como 2.
+2. Crear punteros a `GPIO_OUT_REG` y `GPIO_ENABLE_REG`.
+3. Declarar variables globales:
+   - `previousMillis`, `interval = 1000`, `ledState`.
+4. En `setup()`:
+   - Iniciar `Serial.begin(115200)`.
+   - Configurar el pin como salida con `*gpio_enable |= (1 << LED_PIN);`.
+5. En `loop()`:
+   - Leer el tiempo actual con `millis()`.
+   - Si ha pasado 1 segundo:
+     - Alternar `ledState`.
+     - Encender o apagar el pin mediante acceso al registro.
+     - Enviar `"ON"` o `"OFF"` al puerto serie.
+
+---
 
 
-## Diagrama de tiempos
+## Diagramas de tiempos con con NeoPixel y delay()
+
+![Texto alternativo](url_de_la_imagen.jpg)
+
+
+## Diagramas de tiempos con salida al puerto serie (ON/OFF)
+
+
 
 ## ¿En el programa que se ha realizado cuál es el tiempo libre que tiene el procesador?
 
