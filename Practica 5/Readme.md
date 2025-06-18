@@ -1,196 +1,243 @@
-# Práctica 4: Sistemas Operativos en Tiempo Real
+# Práctica 5: Buses de Comunicación I - I2C
 
 ## Introducción
 
-El objetivo de esta práctica es comprender el funcionamiento de un **sistema operativo en tiempo real (RTOS)** aplicando la funcionalidad de **FreeRTOS** en el microcontrolador ESP32.
+El objetivo de esta práctica es comprender el funcionamiento del bus I2C como medio de comunicación entre el ESP32 y periféricos externos. Se explora su arquitectura maestro-esclavo, su funcionamiento síncrono y su simplicidad en el uso de solo dos líneas (SDA y SCL).
 
-En particular, se busca implementar tareas concurrentes que se ejecutan de forma paralela, demostrando cómo el planificador reparte el tiempo de la CPU entre ellas. Se trabaja con dos ejercicios prácticos:
+En esta práctica se implementan tres ejercicios:
 
-- **Ejercicio 1**: Impresión concurrente por el puerto serie desde dos tareas.
-- **Ejercicio 2**: Sincronización entre dos tareas con un semáforo para controlar un LED.
+- **Ejercicio 1**: Escaneo del bus I2C.
+- **Ejercicio 2**: Control de una pantalla OLED SSD1306.
+- **Ejercicio 3**: Lectura de temperatura y humedad usando un sensor AHT10 y visualización en pantalla.
 
 ---
 
-## Ejercicio 1: Tareas concurrentes con salida por puerto serie
+## Ejercicio 1: Escáner de dispositivos I2C
 
 ### Objetivo
 
-Crear dos tareas:
-- Una tarea principal en `loop()`.
-- Una tarea secundaria (`anotherTask`) creada manualmente con `xTaskCreate`.
-
-Ambas deben imprimir mensajes por el puerto serie simultáneamente.
+Detectar dispositivos conectados al bus I2C usando pines personalizados (SDA=6, SCL=7) y mostrar sus direcciones en el monitor serie.
 
 ### Código utilizado
 
 ```cpp
 #include <Arduino.h>
+#include <Wire.h>
 
-TaskHandle_t task1Handle = NULL;
-
-void anotherTask(void *parameter);
+#define SDA_PIN 6
+#define SCL_PIN 7
 
 void setup() {
-  Serial.begin(112500);
-  xTaskCreate(
-    anotherTask,
-    "another Task",
-    10000,
-    NULL,
-    1,
-    &task1Handle
-  );
+    Wire.begin(SDA_PIN, SCL_PIN);
+    Serial.begin(115200);
+    while (!Serial);
+    Serial.println("\nI2C Scanner");
 }
 
 void loop() {
-  Serial.println("this is ESP32 Task");
-  delay(1000);
-}
+    byte error, address;
+    int nDevices = 0;
+    Serial.println("Scanning...");
 
-void anotherTask(void *parameter) {
-  for (;;) {
-    Serial.println("this is another Task");
-    delay(1000);
-  }
-  vTaskDelete(NULL);
+    for(address = 1; address < 127; address++ ) {
+        Wire.beginTransmission(address);
+        error = Wire.endTransmission();
+
+        if (error == 0) {
+            Serial.print("I2C device found at address 0x");
+            if (address < 16) Serial.print("0");
+            Serial.println(address, HEX);
+            nDevices++;
+        } else if (error == 4) {
+            Serial.print("Unknown error at address 0x");
+            if (address < 16) Serial.print("0");
+            Serial.println(address, HEX);
+        }
+    }
+
+    if (nDevices == 0)
+        Serial.println("No I2C devices found\n");
+    else
+        Serial.println("done\n");
+
+    delay(2000);
 }
 ```
-
-### Funcionamiento
-
-- Se crea una **tarea adicional** (`anotherTask`) al inicio del `setup()`, con prioridad 1.
-- El `loop()` sigue ejecutándose normalmente como la **tarea por defecto de Arduino**.
-- Ambas tareas se ejecutan indefinidamente con un `delay(1000)`, alternando su salida por puerto serie.
 
 ### Salida esperada
 
 ```
-this is ESP32 Task
-this is another Task
-this is ESP32 Task
-this is another Task
-...
+Scanning...
+I2C device found at address 0x3C
+done
 ```
-
-Ambos mensajes aparecen intercalados, indicando que las dos tareas están compartiendo el uso de la CPU correctamente bajo el sistema multitarea de FreeRTOS.
 
 ### Explicación
 
-- `xTaskCreate()` genera una nueva tarea paralela que se ejecuta junto con la tarea principal.
-- El sistema operativo planifica ambas tareas de forma equitativa porque tienen la misma prioridad.
-- Gracias a `delay()`, cada tarea cede el uso de CPU durante 1000ms, permitiendo al planificador cambiar de tarea y dar la sensación de ejecución concurrente.
+El programa recorre las 126 direcciones posibles del bus I2C. Por cada dirección, intenta iniciar y cerrar una transmisión:
+- Si un dispositivo responde, se considera encontrado.
+- Si no, se continúa al siguiente.
+
+Es útil para comprobar conexiones físicas y direcciones de sensores o pantallas.
 
 ---
 
-## Ejercicio 2: Sincronización de tareas con semáforo (LED)
+## Ejercicio 2: Pantalla OLED I2C SSD1306
 
 ### Objetivo
 
-Crear dos tareas:
-- Una que enciende un LED.
-- Otra que lo apaga.
-
-Ambas deben estar sincronizadas mediante un **semáforo binario** para no interferir entre sí.
+Mostrar una animación de puntos desplazándose sobre una pantalla OLED I2C de 128x32 píxeles.
 
 ### Código utilizado
 
 ```cpp
 #include <Arduino.h>
-#include <Adafruit_NeoPixel.h>
+#include <Wire.h>
+#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
 
-#define NEOPIXEL_PIN 48
-#define NUM_LEDS 1
+#define SDA_PIN 6
+#define SCL_PIN 7
+#define SCREEN_WIDTH 128
+#define SCREEN_HEIGHT 32
+#define SCREEN_ADDRESS 0x3C
+#define OLED_RESET -1
 
-Adafruit_NeoPixel pixels(NUM_LEDS, NEOPIXEL_PIN, NEO_GRB + NEO_KHZ800);
-SemaphoreHandle_t xSemaphore = NULL;
-
-void taskEncenderLED(void *parameter);
-void taskApagarLED(void *parameter);
+Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
 void setup() {
-  Serial.begin(112500);
-  pixels.begin();
-  pixels.show();
+  Serial.begin(115200);
+  Wire.begin(SDA_PIN, SCL_PIN);
 
-  xSemaphore = xSemaphoreCreateBinary();
-  if (xSemaphore == NULL) {
-    Serial.println("Error al crear el semáforo");
-    while (1);
+  if (!display.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS)) {
+    Serial.println(F("SSD1306 allocation failed"));
+    for (;;);
   }
-
-  xSemaphoreGive(xSemaphore);
-
-  xTaskCreate(taskEncenderLED, "Encender LED", 10000, NULL, 1, NULL);
-  xTaskCreate(taskApagarLED,  "Apagar LED",   10000, NULL, 1, NULL);
 }
 
 void loop() {
-  // No se usa
-}
-```
-
-```cpp
-void taskEncenderLED(void *parameter) {
-  for (;;) {
-    if (xSemaphoreTake(xSemaphore, portMAX_DELAY) == pdTRUE) {
-      pixels.setPixelColor(0, pixels.Color(255, 255, 255)); // Blanco
-      pixels.show();
-      Serial.println("LED encendido (Blanco)");
-      delay(1000);
-      xSemaphoreGive(xSemaphore);
+  for (int offset = 0; offset <= SCREEN_WIDTH; offset++) {
+    display.clearDisplay();
+    for (int i = 0; i < 10; i++) {
+      int x = (i * 12) + offset;
+      if (x < SCREEN_WIDTH) {
+        display.drawPixel(x, 16, SSD1306_WHITE);
+      }
     }
-    delay(100);
-  }
-}
-
-void taskApagarLED(void *parameter) {
-  for (;;) {
-    if (xSemaphoreTake(xSemaphore, portMAX_DELAY) == pdTRUE) {
-      pixels.setPixelColor(0, pixels.Color(0, 0, 0)); // Apagar
-      pixels.show();
-      Serial.println("LED apagado");
-      delay(1000);
-      xSemaphoreGive(xSemaphore);
-    }
-    delay(100);
+    display.display();
+    delay(50);
   }
 }
 ```
 
 ### Funcionamiento
 
-- Se crea un **semáforo binario** compartido entre las dos tareas.
-- Ambas tareas se turnan para acceder al LED, garantizando que no se encienda y apague simultáneamente.
-- Cada una toma el semáforo, realiza su tarea (encender o apagar el LED), y luego lo libera.
+- Inicializa la pantalla OLED por I2C usando los pines personalizados.
+- Dentro del bucle `loop()`, se desplazan 10 puntos horizontalmente generando una animación suave.
+- Se limpia y actualiza la pantalla en cada ciclo de animación.
 
-### Salida esperada
+---
 
+## Ejercicio 3: Sensor AHT10 + OLED (Lectura y visualización)
+
+### Objetivo
+
+Leer temperatura y humedad del sensor AHT10 y mostrar los valores tanto por pantalla como por el monitor serie.
+
+### Código utilizado
+
+```cpp
+#include <Arduino.h>
+#include <Wire.h>
+#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
+#include <Adafruit_AHTX0.h>
+
+#define SDA_PIN 6
+#define SCL_PIN 7
+#define SCREEN_WIDTH 128
+#define SCREEN_HEIGHT 32
+#define SCREEN_ADDRESS 0x3C
+#define OLED_RESET -1
+
+Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
+Adafruit_AHTX0 aht;
+
+void setup() {
+  Serial.begin(115200);
+  Wire.begin(SDA_PIN, SCL_PIN);
+
+  if (!display.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS)) {
+    Serial.println(F("Error al inicializar la pantalla OLED"));
+    while (1);
+  }
+
+  if (!aht.begin(&Wire)) {
+    Serial.println(F("Error al inicializar el sensor AHT10"));
+    while (1);
+  }
+
+  display.clearDisplay();
+  display.setTextSize(1);
+  display.setTextColor(SSD1306_WHITE);
+  display.setCursor(0, 0);
+  display.println(F("Iniciando..."));
+  display.display();
+  delay(2000);
+}
+
+void loop() {
+  sensors_event_t humidity, temp;
+  aht.getEvent(&humidity, &temp);
+
+  Serial.print(F("Temperatura: "));
+  Serial.print(temp.temperature);
+  Serial.print(F(" °C, Humedad: "));
+  Serial.print(humidity.relative_humidity);
+  Serial.println(F(" %"));
+
+  display.clearDisplay();
+  display.setTextSize(1);
+  display.setTextColor(SSD1306_WHITE);
+  display.setCursor(0, 0);
+  display.print(F("Temp: "));
+  display.print(temp.temperature);
+  display.print(F(" °C"));
+  display.setCursor(0, 16);
+  display.print(F("Humedad: "));
+  display.print(humidity.relative_humidity);
+  display.print(F(" %"));
+  display.display();
+
+  delay(2000);
+}
 ```
-LED encendido (Blanco)
-LED apagado
-LED encendido (Blanco)
-LED apagado
-...
-```
 
-El LED se enciende y apaga en ciclos de 1 segundo, manteniendo una **sincronización precisa** gracias al uso del semáforo.
+### Funcionamiento
+
+- Se inicializa la pantalla OLED y el sensor AHT10 en el bus I2C.
+- En cada iteración del bucle:
+  - Se obtienen los valores de temperatura y humedad.
+  - Se muestran por el puerto serie y en pantalla.
+- Permite una monitorización básica en tiempo real.
 
 ---
 
 ## Conclusión
 
-Con esta práctica se ha logrado:
+En esta práctica se ha comprendido:
 
-- Aplicar los conceptos de **multitarea con FreeRTOS** en ESP32.
-- Crear tareas paralelas que comparten el tiempo de CPU.
-- Sincronizar correctamente tareas usando **semáforos binarios**.
-- Demostrar la capacidad del planificador de FreeRTOS para ejecutar múltiples tareas sin conflictos.
-
-Esta práctica sienta las bases para diseñar sistemas embebidos más complejos y eficientes en aplicaciones donde múltiples procesos deben coexistir sin interferencias.
+- Cómo escanear dispositivos conectados al bus I2C.
+- Cómo trabajar con pantallas OLED mediante la librería `Adafruit_SSD1306`.
+- Cómo integrar sensores I2C como el AHT10 para aplicaciones prácticas.
+- La simplicidad y potencia del bus I2C para sistemas embebidos.
 
 ---
 
-## Recomendaciones opcionales
+## Recomendaciones
 
-- Incluir **foto del montaje físico del LED** (si se usó uno externo).
-- Explorar la fijación de tareas a un núcleo específico usando `xTaskCreatePinnedToCore()`.
+- Añadir **foto del montaje físico** con la pantalla y el sensor conectados.
+- Subir el proyecto y el informe a GitHub.
+- (Opcional) Implementar una **web para mostrar los valores** del sensor como parte del ejercicio de subida de nota.
+
+ç
