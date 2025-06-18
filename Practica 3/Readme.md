@@ -149,20 +149,6 @@ void loop() {
 The device started, now you can pair it with bluetooth!
 ```
 
----
-
-## Video demostrativo
-
-
----
-
-## Ejercicios propuestos para mejora de nota
-
-1. Implementar el servidor WiFi en modo **AP** (Access Point).
-2. Probar la funcionalidad **BLE** con el siguiente tutorial:  
-   [https://randomnerdtutorials.com/esp32-bluetooth-low-energy-ble-arduino-ide/](https://randomnerdtutorials.com/esp32-bluetooth-low-energy-ble-arduino-ide/)
-
----
 
 ## Conclusión
 
