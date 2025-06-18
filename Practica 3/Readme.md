@@ -20,18 +20,30 @@ Crear un servidor web accesible desde cualquier dispositivo conectado a la misma
 
 El código conecta el ESP32 a una red WiFi (modo estación), inicia un servidor web en el puerto 80 y responde con una página HTML:
 
+
 ```cpp
 #include <WiFi.h>
 #include <WebServer.h>
+```
 
-// SSID y contraseña de la red WiFi
+Primero se incluyen las librerías necesarias:
+- `WiFi.h` permite conectar el ESP32 a redes WiFi.
+- `WebServer.h` nos permite crear un servidor web básico que responderá a peticiones HTTP.
+
+```cpp
 const char* ssid = "Livebox6-BEB1";
 const char* password = "6VDPndX7fsnt";
+```
+Aquí definimos las credenciales de la red WiFi a la que queremos que se conecte el ESP32. Estas se usarán más adelante para iniciar la conexión.
 
+```cpp
 WebServer server(80); // Puerto HTTP
-
 void handle_root();
+```
 
+Creamos una instancia del servidor web que escuchará en el puerto 80 (el estándar para HTTP). También declaramos una función llamada `handle_root()` que se encargará de responder cuando el usuario acceda a la página principal.
+
+```cpp
 void setup() {
   Serial.begin(115200);
   WiFi.begin(ssid, password);
@@ -46,19 +58,31 @@ void setup() {
   server.begin();
   Serial.println("Servidor HTTP iniciado");
 }
+```
 
+En la función `setup()`:
+- Iniciamos la comunicación por puerto serie a 115200 baudios para poder ver mensajes de depuración.
+- Llamamos a `WiFi.begin()` pasando el `ssid` y `password` para iniciar la conexión a la red.
+- Con un bucle `while`, esperamos a que el estado del WiFi sea `WL_CONNECTED`, indicando que ya estamos conectados.
+- Una vez conectado, imprimimos la dirección IP asignada al ESP32.
+- Configuramos el servidor para que cuando alguien acceda a la ruta `/`, se llame a `handle_root()`.
+- Finalmente, iniciamos el servidor con `server.begin()`.
+
+```cpp
 void loop() {
   server.handleClient();
 }
+```
 
-String HTML = R"rawliteral(
-// Se omite por brevedad. Ver el archivo completo en el repositorio.
-)rawliteral";
+En el `loop()`, simplemente se llama a `server.handleClient()`, que se encarga de gestionar las peticiones entrantes al servidor. Esta función debe llamarse constantemente para que el servidor pueda atender a los clientes.
 
+```cpp
 void handle_root() {
   server.send(200, "text/html", HTML);
 }
 ```
+
+Esta función es la encargada de responder a las peticiones a la raíz del servidor (`/`). Envia una respuesta HTTP con código 200 (OK) y contenido del tipo "text/html", que es el HTML de la página web que hemos definido.
 
 ### HTML incrustado
 
