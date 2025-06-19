@@ -225,19 +225,10 @@ void loop() {
 
 ## Conclusión
 
-En esta práctica se ha comprendido:
+En esta práctica hemos comprendido:
 
 - Cómo escanear dispositivos conectados al bus I2C.
 - Cómo trabajar con pantallas OLED mediante la librería `Adafruit_SSD1306`.
 - Cómo integrar sensores I2C como el AHT10 para aplicaciones prácticas.
 - La simplicidad y potencia del bus I2C para sistemas embebidos.
 
----
-
-## Recomendaciones
-
-- Añadir **foto del montaje físico** con la pantalla y el sensor conectados.
-- Subir el proyecto y el informe a GitHub.
-- (Opcional) Implementar una **web para mostrar los valores** del sensor como parte del ejercicio de subida de nota.
-
-ç
