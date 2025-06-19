@@ -144,6 +144,10 @@ void loop() {
 
 Leer temperatura y humedad del sensor AHT10 y mostrar los valores tanto por pantalla como por el monitor serie.
 
+## Montaje
+
+![Montaje](temperatura.jpeg)
+
 ### Código utilizado
 
 ```cpp
