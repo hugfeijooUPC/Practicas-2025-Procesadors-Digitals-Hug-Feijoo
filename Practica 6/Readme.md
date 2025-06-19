@@ -16,6 +16,10 @@ Se realizan dos ejercicios prácticos obligatorios:
 
 Leer el contenido de un archivo de texto almacenado en una tarjeta SD utilizando comunicación SPI.
 
+## Montaje
+
+![Montaje](Tarjeta.jpg)
+
 ### Código utilizado (`6.1.cpp`)
 
 ```cpp
@@ -81,6 +85,10 @@ archivo.txt:
 ### Objetivo
 
 Leer el UID (Identificador Único) de una tarjeta RFID usando el lector RC522 conectado por SPI.
+
+## Montaje
+
+![Montaje](RFID.jpg)
 
 ### Código utilizado (`6.2.cpp`)
 
