@@ -17,7 +17,7 @@ El protocolo I2S permite una alta calidad de sonido al transmitir datos de forma
 
 Reproducir un archivo de audio almacenado en la **memoria flash interna** del ESP32 utilizando el protocolo I2S y el decodificador MAX98357A.
 
-### Código utilizado (`7.1.cpp`)
+### Código utilizado 
 
 ```cpp
 #include "AudioGeneratorAAC.h"
@@ -89,7 +89,11 @@ Reproducción completada
 
 Reproducir un archivo `.wav` desde una **tarjeta microSD** utilizando I2S y MAX98357A.
 
-### Código utilizado (`7.2.cpp`)
+## Montaje
+
+![Montaje](Audio.jpeg)
+
+### Código utilizado
 
 ```cpp
 #include "Audio.h"
@@ -153,11 +157,3 @@ Con esta práctica se logra:
 - Aplicar protocolos síncronos para transmisión precisa de datos multimedia.
 
 ---
-
-## Recomendaciones
-
-- Incluir **foto del montaje físico** con altavoz, MAX98357 y ESP32.
-- Asegurar el uso correcto de pines I2S (y evitar conflictos con otros periféricos).
-- Verificar frecuencias de muestreo compatibles con el MAX98357 (8kHz–96kHz).
-- Optimizar el código para reconexión automática o reproducción en bucle.
-
