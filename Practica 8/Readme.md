@@ -80,20 +80,4 @@ Este ejercicio permite:
 - Aplicar redirección de datos entre terminal y periféricos externos.
 - Preparar la base para trabajar con módulos como GPS o GSM en UART2.
 
----
-
-## Recomendaciones
-
-- Para pruebas de bucle, conectar físicamente GPIO17 (TXD2) a GPIO16 (RXD2).
-- Para pruebas reales, conectar un módulo GPS o sensor serial al UART2.
-- Asegurar que la velocidad, bit de parada y paridad coincidan entre emisor y receptor.
-
----
-
-## Próximos pasos
-
-Puedes extender esta práctica con:
-
-- Un **módulo GPS** (opcional: ejercicio 2 del enunciado).
-- Un **módem GSM** para conectividad a internet (opcional: ejercicio 3).
 
