@@ -188,9 +188,3 @@ Con esta práctica se ha logrado:
 
 Esta práctica sienta las bases para diseñar sistemas embebidos más complejos y eficientes en aplicaciones donde múltiples procesos deben coexistir sin interferencias.
 
----
-
-## Recomendaciones opcionales
-
-- Incluir **foto del montaje físico del LED** (si se usó uno externo).
-- Explorar la fijación de tareas a un núcleo específico usando `xTaskCreatePinnedToCore()`.
