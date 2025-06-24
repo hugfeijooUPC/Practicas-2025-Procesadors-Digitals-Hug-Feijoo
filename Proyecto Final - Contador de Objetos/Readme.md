@@ -94,7 +94,7 @@ El usuario elige entre arrancar el programa o iniciar los tests.
   webSocket.broadcastTXT(String(totalCount));
   ```
 - En el display se refresca el texto:
-  > Objetos: X  
+  > Count: X  
 - En el navegador, el script WebSocket `onmessage` pinta el nuevo valor y actualiza el elemento `<span id="count">X</span>`.
 
 ![display](modo1.jpeg)
