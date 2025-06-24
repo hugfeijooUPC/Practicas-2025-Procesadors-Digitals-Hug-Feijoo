@@ -56,4 +56,62 @@ lib_deps =
    adafruit/Adafruit GFX Library@^1.12.1
    adafruit/Adafruit ST7735 and ST7789 Library@^1.11.0
    Links2004/WebSockets@^2.3.0
+```
+### Flujo de ejecución detallado
+
+1. **Arranque y menú principal**  
+   Al encender, se inicializa Serial a 115200 baud y se muestra en pantalla:
+   ```cpp
+   === MENÚ PRINCIPAL ===
+   1 - Ejecutar Programa Principal
+   2 - Iniciar Tests
+   ```
+El usuario elige entre arrancar el programa o iniciar los tests.
+
+2. **Creación de AP y credenciales WiFi**  
+- `WebServerManager.begin()` configura el ESP32-S3 como AP con SSID y contraseña prefijados.  
+- `DisplayManager.showWiFiCredentials()` dibuja en el TFT:
+  > WiFi Iniciado
+  > SSID:ESP32_AP
+  > PASSWORD: 12345678
+  > IP: 192.168.4.1
+
+![display](wifi.jpeg)
+
+
+3. **Detección de conexión del cliente**  
+- Al conectar un cliente (PC o móvil) al AP, el handler WebSocket (`onEvent`) detecta `WS_EVT_CONNECT`.  
+- `DisplayManager.showClientConnected(clientIP)` actualiza el TFT indicando:
+  > Cliente conectado! IP: 192.168.4.2
+  
+![display](conectado.jpeg)
+
+4. **Modo 1: Conteo en tiempo real**  
+- El usuario abre el navegador en `http://192.168.4.1` y el frontend carga el websocket hacia `ws://192.168.4.1:81`.  
+- Cada vez que `SensorManager.detectObject()` incrementa el contador, llama:
+  ```cpp
+  DisplayManager.screenCounter(totalCount);
+  webSocket.broadcastTXT(String(totalCount));
+  ```
+- En el display se refresca el texto:
+  > Objetos: X  
+- En el navegador, el script WebSocket `onmessage` pinta el nuevo valor y actualiza el elemento `<span id="count">X</span>`.
+
+![display](modo1.jpeg)
+
+5. **Modo 2: Generación de gráfica de 60 s**  
+- Al seleccionar “Gráfica 60 s”, `DisplayManager.startRealTimeGraph()` borra el buffer `counts[60]`.  
+- Durante 60 s, un ticker llamará cada segundo a:
+  ```cpp
+  counts[sec] = SensorManager.currentCount();
+  DisplayManager.updateRealTimeGraph(counts, sec);
+  webSocket.broadcastTXT(String(counts[sec]));
+  ```
+- El TFT dibuja barras de altura proporcional y muestra el número de segundo transcurrido.
+- El frontend web recibe cada barra vía WebSocket y repinta un chart.js en tiempo real.  
+- Tras 60 s, `DisplayManager.drawFinalGraph()` muestra la gráfica completa y, tras 5 s, retorna al menú.
+
+![display](modo2.jpeg)
+
+
 
