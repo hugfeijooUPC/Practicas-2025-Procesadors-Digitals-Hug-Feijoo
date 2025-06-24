@@ -82,7 +82,7 @@ El usuario elige entre arrancar el programa o iniciar los tests.
 3. **Detección de conexión del cliente**  
 - Al conectar un cliente (PC o móvil) al AP, el handler WebSocket (`onEvent`) detecta `WS_EVT_CONNECT`.  
 - `DisplayManager.showClientConnected(clientIP)` actualiza el TFT indicando:
-  > Cliente conectado! IP: 192.168.4.2
+  > Cliente conectado! Conactarse a la IP: 192.168.4.1
   
 ![display](conectado.jpeg)
 
